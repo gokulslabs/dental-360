@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useEffect, useState, type FormEvent } from "react";
-import { ArrowRight, ArrowUpRight, Phone, MessageCircle, CalendarCheck, MapPin, Mail, Clock, Menu, X, Sun, Moon } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Phone, MessageCircle, CalendarCheck, MapPin, Mail, Clock, Menu, X, Instagram, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import clinicPhoto from "@/assets/dental360-clinic-twilight.png";
 import interior from "@/assets/dental360-treatment-room.png";
@@ -38,42 +38,44 @@ export function Logo({ invert = false }: { invert?: boolean }) {
   );
 }
 
-export function Placeholder({ children }: { children: React.ReactNode }) {
-  return <span className="border-b border-dashed border-placeholder text-placeholder">{children}</span>;
+const publicEmail = clinic.email.endsWith(".example") ? null : clinic.email;
+
+function mapsUrl(query: string) {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
 export function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [dark, setDark] = useState(false);
   useEffect(() => {
-    setDark(document.documentElement.classList.contains("dark"));
     const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-  const toggleTheme = () => {
-    const next = !dark;
-    setDark(next);
-    document.documentElement.classList.toggle("dark", next);
-    try { localStorage.setItem("d360-theme", next ? "dark" : "light"); } catch {}
-    const background = getComputedStyle(document.documentElement).getPropertyValue("--background").trim();
-    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", background);
-  };
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") setOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
   return (
     <header className={`sticky top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur transition-shadow duration-300 ${scrolled ? "shadow-[0_10px_30px_-18px_rgba(20,20,40,0.35)]" : ""}`}>
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5 md:px-10">
+      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-4 px-5 md:px-10">
         <Logo />
         <nav aria-label="Main" className="hidden items-center gap-8 lg:flex">
           {nav.map(([l, h]) => (
-            <Link key={l} to={h} activeProps={{ className: "text-foreground" }} className="text-sm text-muted-foreground transition-colors hover:text-foreground">{l}</Link>
+            <Link key={l} to={h} activeProps={{ className: "font-semibold text-foreground" }} className="text-sm text-muted-foreground transition-colors hover:text-foreground">{l}</Link>
           ))}
         </nav>
         <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" className="h-11 w-11 shrink-0 text-primary" onClick={toggleTheme} aria-label={dark ? "Switch to light mode" : "Switch to pink dark mode"} aria-pressed={dark} title={dark ? "Light mode" : "Pink dark mode"}>
-            {dark ? <Sun /> : <Moon />}
-          </Button>
+          <a href={clinic.phoneHref} className="hidden items-center gap-2 text-sm font-semibold xl:inline-flex">
+            <Phone className="h-4 w-4 text-primary" /> {clinic.phone}
+          </a>
           <Link to="/contact" className="hidden bg-ink px-5 py-3 text-xs font-semibold tracking-[0.14em] text-ink-foreground uppercase transition-colors hover:bg-primary lg:inline-flex">
             Book Appointment
           </Link>
@@ -83,10 +85,14 @@ export function Header() {
         </div>
       </div>
       {open && (
-        <nav className="border-t border-border bg-background px-5 py-4 lg:hidden">
+        <nav className="max-h-[calc(100dvh-5rem)] overflow-y-auto border-t border-border bg-background px-5 py-4 lg:hidden">
           {nav.map(([l, h]) => (
-            <Link key={l} to={h} activeProps={{ className: "text-foreground" }} onClick={() => setOpen(false)} className="block py-3 text-lg">{l}</Link>
+            <Link key={l} to={h} activeProps={{ className: "font-semibold text-foreground" }} onClick={() => setOpen(false)} className="block border-b border-border py-4 text-lg">{l}</Link>
           ))}
+          <a href={clinic.phoneHref} className="mt-4 flex items-center gap-3 py-3 text-base font-semibold"><Phone className="h-4 w-4 text-primary" /> Call {clinic.phone}</a>
+          <Link to="/contact" onClick={() => setOpen(false)} className="mt-2 inline-flex w-full items-center justify-center gap-2 bg-primary px-5 py-4 text-xs font-semibold tracking-[0.14em] text-primary-foreground uppercase">
+            Book appointment <ArrowRight className="h-4 w-4" />
+          </Link>
         </nav>
       )}
     </header>
@@ -108,16 +114,16 @@ export function Hero() {
           <Link to="/contact" className="group inline-flex items-center justify-center gap-3 bg-primary px-7 py-4 text-xs font-semibold tracking-[0.14em] text-primary-foreground uppercase transition-colors hover:bg-ink">
             Book an Appointment <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
-          <a href={whatsappLink()} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-3 border border-foreground/20 px-7 py-4 text-xs font-semibold tracking-[0.14em] uppercase transition-colors hover:border-foreground">
+          <a href={whatsappLink()} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-3 border border-foreground/40 px-7 py-4 text-xs font-semibold tracking-[0.14em] uppercase transition-colors hover:border-foreground">
             <MessageCircle className="h-4 w-4" /> WhatsApp Us
           </a>
         </div>
       </div>
-      <figure className="reveal relative lg:col-span-6" style={{ animationDelay: "0.15s" }}>
+      <figure className="reveal relative mb-6 lg:col-span-6 lg:mb-0" style={{ animationDelay: "0.15s" }}>
         <div className="overflow-hidden rounded-[22px] border border-border shadow-[0_30px_60px_-30px_rgba(20,20,40,0.35)]">
           <img src={clinicPhoto} alt="Dental 360 clinic entrance and signage in Vellore at dusk" width={1234} height={1092} fetchPriority="high" className="aspect-[16/10] w-full object-cover lg:aspect-[4/3]" style={{ objectPosition: "50% 44%" }} />
         </div>
-        <figcaption className="absolute -bottom-5 left-6 rounded-full border border-border bg-background px-5 py-2.5 text-[0.65rem] font-semibold tracking-[0.16em] text-muted-foreground uppercase shadow-sm">
+        <figcaption className="absolute bottom-4 left-4 rounded-full border border-border bg-background px-5 py-2.5 text-[0.65rem] font-semibold tracking-[0.16em] text-muted-foreground uppercase shadow-sm lg:-bottom-5 lg:left-6">
           <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-primary align-middle" />Our clinic · Sathuvachari
         </figcaption>
       </figure>
@@ -141,13 +147,14 @@ export function TrustStrip() {
   );
 }
 
-export function About({ image = interior, alt = "Inside Dental 360" }: { image?: string; alt?: string }) {
+export function About({ image = interior, alt = "Inside Dental 360", asPage = false }: { image?: string; alt?: string; asPage?: boolean }) {
+  const Heading = asPage ? "h1" : "h2";
   return (
     <section id="about" className="reveal-in mx-auto grid max-w-7xl items-center gap-12 px-5 py-24 md:px-10 lg:grid-cols-2 lg:gap-20 lg:py-32">
       <img src={image} alt={alt} loading="lazy" className="aspect-[5/6] w-full object-cover" />
       <div>
         <p className="eyebrow">About Dental 360</p>
-        <h2 className="display mt-6 text-4xl md:text-5xl">Modern dentistry, with a human touch.</h2>
+        <Heading className="display mt-6 text-4xl md:text-5xl">Modern dentistry, with a human touch.</Heading>
         <p className="mt-7 text-lg leading-relaxed text-muted-foreground">
           Dental 360 is a multi-speciality dental group in Vellore, bringing a full range of treatments together under one roof. From routine check-ups to advanced restorative work, every visit is planned around clear explanations, comfort and care that fits you.
         </p>
@@ -177,14 +184,16 @@ export function Treatments({ asPage = false }: { asPage?: boolean } = {}) {
         </div>
         <ol className="mt-12 grid border-t border-l border-border sm:grid-cols-2 lg:mt-16 lg:grid-cols-5">
           {treatments.map(([name, desc], i) => (
-            <li key={name} className="group relative flex flex-col border-r border-b border-border bg-secondary p-6 transition-colors duration-300 hover:bg-background lg:min-h-60 lg:p-7">
-              <span className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-primary transition-transform duration-300 group-hover:scale-x-100" />
-              <div className="flex items-start justify-between">
-                <span className="text-xs font-semibold text-muted-foreground tabular-nums">{String(i + 1).padStart(2, "0")}</span>
-                <ArrowUpRight className="h-4 w-4 text-primary opacity-0 transition-opacity group-hover:opacity-100" />
-              </div>
-              <h3 className="mt-8 text-lg leading-snug font-semibold tracking-tight lg:mt-auto lg:pt-10">{name}</h3>
-              <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">{desc}</p>
+            <li key={name} className="border-r border-b border-border bg-secondary">
+              <Link to="/contact" search={{ treatment: name }} className="group relative flex h-full flex-col p-6 transition-colors duration-300 hover:bg-background lg:min-h-60 lg:p-7">
+                <span className="absolute inset-x-0 top-0 h-0.5 origin-left scale-x-0 bg-primary transition-transform duration-300 group-hover:scale-x-100" />
+                <div className="flex items-start justify-between">
+                  <span className="text-xs font-semibold text-muted-foreground tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+                  <ArrowUpRight className="h-4 w-4 text-primary opacity-0 transition-opacity group-hover:opacity-100" />
+                </div>
+                <h3 className="mt-8 text-lg leading-snug font-semibold tracking-tight lg:mt-auto lg:pt-10">{name}</h3>
+                <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">{desc}</p>
+              </Link>
             </li>
           ))}
         </ol>
@@ -242,21 +251,23 @@ export function Why() {
 export function Doctors() {
   return (
     <section id="doctors" className="reveal-in border-t border-border py-24 lg:py-32">
-      <div className="mx-auto max-w-7xl px-5 md:px-10">
+      <div className="mx-auto max-w-3xl px-5 md:px-10">
         <p className="eyebrow">Our Doctors</p>
-        <h2 className="display mt-6 max-w-2xl text-4xl md:text-5xl">The team behind your care.</h2>
-        <div className="mt-16 grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((n) => (
-            <article key={n}>
-              <div className="flex aspect-[4/5] items-center justify-center bg-secondary">
-                <span className="text-xs tracking-[0.18em] text-muted-foreground uppercase">Photo to be added</span>
-              </div>
-              <h3 className="mt-6 text-lg font-semibold"><Placeholder>Doctor name</Placeholder></h3>
-              <p className="mt-1 text-sm text-muted-foreground"><Placeholder>Qualifications to be confirmed</Placeholder></p>
-              <p className="mt-1 text-sm text-primary"><Placeholder>Speciality</Placeholder></p>
-            </article>
-          ))}
+        <h1 className="display mt-6 text-4xl md:text-5xl">The team behind your care.</h1>
+        <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
+          Profiles and portraits are on the way. Call or message the clinic and we will match you with the dentist for your visit — you will meet them in person before any treatment starts.
+        </p>
+        <div className="mt-10 flex flex-col gap-3 sm:flex-row">
+          <a href={clinic.phoneHref} className="inline-flex items-center justify-center gap-3 bg-primary px-7 py-4 text-xs font-semibold tracking-[0.14em] text-primary-foreground uppercase">
+            <Phone className="h-4 w-4" /> Call {clinic.phone}
+          </a>
+          <a href={whatsappLink("Hello Dental 360, I'd like to know which doctor to see.")} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-3 border border-foreground/40 px-7 py-4 text-xs font-semibold tracking-[0.14em] uppercase">
+            <MessageCircle className="h-4 w-4" /> WhatsApp the clinic
+          </a>
         </div>
+        <a href={clinic.socialLinks.instagram} target="_blank" rel="noreferrer" className="mt-8 inline-flex items-center gap-2 text-sm font-semibold">
+          <Instagram className="h-4 w-4 text-primary" /> See the clinic on Instagram <ArrowUpRight className="h-4 w-4" />
+        </a>
       </div>
     </section>
   );
@@ -281,7 +292,7 @@ export function Locations() {
     <section id="locations" className="reveal-in bg-ink py-24 text-ink-foreground lg:py-32">
       <div className="mx-auto max-w-7xl px-5 md:px-10">
         <p className="eyebrow">Locations</p>
-        <h2 className="display mt-6 text-4xl md:text-5xl">Find us in Vellore.</h2>
+        <h1 className="display mt-6 text-4xl md:text-5xl">Find us in Vellore.</h1>
         <div className="mt-16 grid gap-px bg-ink-foreground/15 md:grid-cols-2">
           {clinic.locations.map((l) => {
             const photo = locationPhotos[l.name];
@@ -293,9 +304,9 @@ export function Locations() {
               )}
               <h3 className="text-xl font-semibold">{l.name}</h3>
               <ul className="mt-8 space-y-4 text-sm text-ink-foreground/75">
-                <li className="flex gap-3"><MapPin className="h-4 w-4 shrink-0 text-primary" />{l.address}</li>
+                <li className="flex gap-3"><MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" /><a href={mapsUrl(l.address)} target="_blank" rel="noreferrer" className="hover:text-ink-foreground">{l.address}</a></li>
                 <li><a href={clinic.phoneHref} className="inline-flex min-h-11 items-center gap-3 hover:text-ink-foreground"><Phone className="h-4 w-4 shrink-0 text-primary" />{l.phone}</a></li>
-                <li className="flex gap-3"><Clock className="h-4 w-4 shrink-0 text-primary" />{l.hours}</li>
+                <li className="flex gap-3"><Clock className="mt-0.5 h-4 w-4 shrink-0 text-primary" />{l.hours}</li>
               </ul>
               {gallery && (
                 <>
@@ -307,7 +318,7 @@ export function Locations() {
                   </div>
                 </>
               )}
-              <a href={clinic.googleMaps} target="_blank" rel="noreferrer" className="mt-10 inline-flex items-center gap-2 border-b border-ink-foreground/40 pb-1 text-sm font-semibold hover:border-primary">
+              <a href={mapsUrl(l.address)} target="_blank" rel="noreferrer" className="mt-10 inline-flex items-center gap-2 border-b border-ink-foreground/40 pb-1 text-sm font-semibold hover:border-primary">
                 Get directions <ArrowUpRight className="h-4 w-4" />
               </a>
             </article>
@@ -343,13 +354,16 @@ const testimonials = [
 export function Reviews() {
   const slides = testimonials;
   const [i, setI] = useState(0);
+  const [paused, setPaused] = useState(false);
   const t = slides[i] ?? slides[0]!;
   useEffect(() => {
-    const id = setTimeout(() => setI((i + 1) % slides.length), 9000);
+    if (paused || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = setTimeout(() => setI((n) => (n + 1) % slides.length), 9000);
     return () => clearTimeout(id);
-  }, [i, slides.length]);
+  }, [i, paused, slides.length]);
+  const step = (dir: number) => setI((n) => (n + dir + slides.length) % slides.length);
   return (
-    <section className="reveal-in mx-auto max-w-4xl px-5 py-24 text-center md:px-10 lg:py-32">
+    <section className="reveal-in mx-auto max-w-4xl px-5 py-24 text-center md:px-10 lg:py-32" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onFocusCapture={() => setPaused(true)} onBlurCapture={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setPaused(false); }}>
       <p className="eyebrow">Patient Stories</p>
       <blockquote key={i} className="reveal mt-10 font-serif text-xl font-normal leading-snug md:text-3xl">
         “{t.quote}”
@@ -360,59 +374,77 @@ export function Reviews() {
           <MapPin className="h-4 w-4 text-primary md:h-5 md:w-5" /> {t.place}
         </p>
       </div>
-      <div className="mt-10 flex items-center justify-center gap-2">
+      <div className="mt-10 flex items-center justify-center gap-1">
+        <button type="button" aria-label="Previous story" onClick={() => step(-1)} className="p-2"><ChevronLeft className="h-5 w-5" /></button>
         {slides.map((s, n) => (
           <button key={s.name} aria-label={`Show review from ${s.name}`} aria-current={n === i} onClick={() => setI(n)} className="p-2">
             <span className={`block h-1.5 rounded-full transition-all ${n === i ? "w-8 bg-primary" : "w-1.5 bg-border"}`} />
           </button>
         ))}
+        <button type="button" aria-label="Next story" onClick={() => step(1)} className="p-2"><ChevronRight className="h-5 w-5" /></button>
       </div>
     </section>
   );
 }
 
-const field = "w-full border-0 border-b border-input bg-transparent px-0 py-3 text-base outline-none transition-colors focus:border-primary";
+const field = "w-full border-0 border-b border-input bg-transparent px-0 py-3 text-base outline-none transition-colors focus-visible:border-primary";
+const labelCls = "flex flex-col gap-1 text-xs font-semibold tracking-wider uppercase";
 
-export function Appointment() {
+function todayISO() {
+  const d = new Date();
+  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
+}
+
+export function Appointment({ initialTreatment }: { initialTreatment?: string } = {}) {
+  const known = treatments.some(([name]) => name === initialTreatment);
   const [sent, setSent] = useState(false);
+  const [waHref, setWaHref] = useState<string | null>(null);
   const submit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
-    const msg = `Appointment request\nName: ${f.get("name")}\nPhone: ${f.get("phone")}\nClinic: ${f.get("clinic")}\nDate: ${f.get("date")}\nTime: ${f.get("time")}\nTreatment: ${f.get("treatment")}\nMessage: ${f.get("message")}`;
-    window.open(whatsappLink(msg), "_blank");
+    const msg = `Appointment request\nName: ${f.get("name")}\nPhone: ${f.get("phone")}\nClinic: ${f.get("clinic")}\nDate: ${f.get("date") || "Flexible"}\nTime: ${f.get("time")}\nTreatment: ${f.get("treatment")}\nMessage: ${f.get("message") || "—"}`;
+    const href = whatsappLink(msg);
+    const opened = window.open(href, "_blank", "noopener,noreferrer");
+    setWaHref(href);
     setSent(true);
+    if (!opened) return;
   };
   return (
-    <section id="appointment" className="reveal-in bg-secondary py-24 lg:py-32">
+    <section id="appointment" className="reveal-in scroll-mt-24 bg-secondary py-24 lg:py-32">
       <div className="mx-auto grid max-w-7xl gap-14 px-5 md:px-10 lg:grid-cols-12">
         <div className="lg:col-span-5">
           <p className="eyebrow">Appointments</p>
-          <h2 className="display mt-6 text-4xl md:text-5xl">Ready to take the next step?</h2>
-          <p className="mt-6 text-lg leading-relaxed text-muted-foreground">Share a few details and our team will get back to you to confirm your visit.</p>
+          <h1 className="display mt-6 text-4xl md:text-5xl">Ready to take the next step?</h1>
+          <p className="mt-6 text-lg leading-relaxed text-muted-foreground">Share a few details. We’ll open WhatsApp with your request filled in — send that message and the clinic will confirm your visit.</p>
           <div className="mt-10 space-y-3 text-sm">
-            <a href={clinic.phoneHref} className="flex items-center gap-3"><Phone className="h-4 w-4 text-primary" /> {clinic.phone}</a>
-            <a href={whatsappLink()} target="_blank" rel="noreferrer" className="flex items-center gap-3"><MessageCircle className="h-4 w-4 text-primary" /> Chat on WhatsApp</a>
+            <a href={clinic.phoneHref} className="flex min-h-11 items-center gap-3"><Phone className="h-4 w-4 text-primary" /> {clinic.phone}</a>
+            <a href={whatsappLink()} target="_blank" rel="noreferrer" className="flex min-h-11 items-center gap-3"><MessageCircle className="h-4 w-4 text-primary" /> Chat on WhatsApp</a>
           </div>
         </div>
         <form onSubmit={submit} className="grid gap-x-8 gap-y-6 bg-background p-7 sm:grid-cols-2 md:p-12 lg:col-span-7">
-          <label className="text-xs font-semibold tracking-wider uppercase">Name<input required name="name" autoComplete="name" className={field} /></label>
-          <label className="text-xs font-semibold tracking-wider uppercase">Phone<input required name="phone" type="tel" autoComplete="tel" className={field} /></label>
-          <label className="text-xs font-semibold tracking-wider uppercase">Clinic
+          <label className={labelCls}>Name<input required name="name" autoComplete="name" className={field} /></label>
+          <label className={labelCls}>Phone<input required name="phone" type="tel" autoComplete="tel" inputMode="tel" className={field} /></label>
+          <label className={labelCls}>Clinic
             <select name="clinic" className={field}>{clinic.locations.map((l) => <option key={l.name}>{l.name}</option>)}</select>
           </label>
-          <label className="text-xs font-semibold tracking-wider uppercase">Treatment
-            <select name="treatment" className={field}><option>Not sure / Consultation</option>{treatments.map(([t]) => <option key={t}>{t}</option>)}</select>
+          <label className={labelCls}>Treatment
+            <select name="treatment" defaultValue={known ? initialTreatment : "Not sure / Consultation"} className={field}><option>Not sure / Consultation</option>{treatments.map(([t]) => <option key={t}>{t}</option>)}</select>
           </label>
-          <label className="text-xs font-semibold tracking-wider uppercase">Preferred Date<input name="date" type="date" className={field} /></label>
-          <label className="text-xs font-semibold tracking-wider uppercase">Preferred Time
+          <label className={labelCls}>Preferred Date<input name="date" type="date" min={todayISO()} className={field} /></label>
+          <label className={labelCls}>Preferred Time
             <select name="time" className={field}><option>Morning</option><option>Afternoon</option><option>Evening</option></select>
           </label>
-          <label className="text-xs font-semibold tracking-wider uppercase sm:col-span-2">Message<textarea name="message" rows={3} className={field} /></label>
+          <label className={`${labelCls} sm:col-span-2`}>Message<textarea name="message" rows={3} className={field} /></label>
           <div className="sm:col-span-2">
             <button type="submit" className="inline-flex w-full items-center justify-center gap-3 bg-primary px-7 py-4 text-xs font-semibold tracking-[0.14em] text-primary-foreground uppercase transition-colors hover:bg-ink sm:w-auto">
-              Request Appointment <ArrowRight className="h-4 w-4" />
+              Continue on WhatsApp <ArrowRight className="h-4 w-4" />
             </button>
-            {sent && <p role="status" className="mt-4 text-sm text-muted-foreground">Thank you — please send the WhatsApp message that opened to complete your request.</p>}
+            {sent && waHref && (
+              <p role="status" className="mt-4 text-sm text-muted-foreground">
+                If WhatsApp didn’t open, <a href={waHref} target="_blank" rel="noreferrer" className="font-semibold text-foreground underline underline-offset-4">send the request here</a>.
+              </p>
+            )}
           </div>
         </form>
       </div>
@@ -424,8 +456,9 @@ export function Contact() {
   const items = [
     [Phone, "Phone", clinic.phone, clinic.phoneHref],
     [MessageCircle, "WhatsApp", "Message us", whatsappLink()],
-    [Mail, "Email", clinic.email, `mailto:${clinic.email}`],
+    ...(publicEmail ? [[Mail, "Email", publicEmail, `mailto:${publicEmail}`] as const] : []),
     [MapPin, "Google Maps", "Open directions", clinic.googleMaps],
+    [Instagram, "Instagram", "@dental_360_vellore", clinic.socialLinks.instagram],
   ] as const;
   return (
     <section id="contact" className="reveal-in mx-auto max-w-7xl px-5 py-24 md:px-10">
@@ -457,18 +490,20 @@ export function Footer() {
         </div>
         <div>
           <p className="text-xs tracking-[0.18em] text-ink-foreground/50 uppercase">Treatments</p>
-          <ul className="mt-5 space-y-2 text-sm">{treatments.slice(0, 6).map(([t]) => <li key={t}>{t}</li>)}</ul>
+          <ul className="mt-5 space-y-2 text-sm">{treatments.slice(0, 6).map(([t]) => <li key={t}><Link to="/contact" search={{ treatment: t }} className="hover:text-primary">{t}</Link></li>)}</ul>
         </div>
         <div>
           <p className="text-xs tracking-[0.18em] text-ink-foreground/50 uppercase">Contact</p>
           <ul className="mt-5 space-y-2 text-sm text-ink-foreground/80">
-            <li>{clinic.phone}</li><li>{clinic.email}</li><li>{clinic.openingHours}</li>
+            <li><a href={clinic.phoneHref} className="hover:text-primary">{clinic.phone}</a></li>
+            {publicEmail && <li><a href={`mailto:${publicEmail}`} className="hover:text-primary">{publicEmail}</a></li>}
+            <li>{clinic.openingHours}</li>
+            <li><a href={clinic.socialLinks.instagram} target="_blank" rel="noreferrer" className="hover:text-primary">Instagram</a></li>
           </ul>
         </div>
       </div>
       <div className="mx-auto mt-16 flex max-w-7xl flex-col justify-between gap-3 border-t border-ink-foreground/15 px-5 pt-8 text-xs text-ink-foreground/50 md:flex-row md:px-10">
         <p>© {new Date().getFullYear()} Dental 360 Multi-Speciality Group. All rights reserved.</p>
-        <p className="flex gap-6"><a href="#">Privacy Policy</a><a href="#">Terms</a></p>
       </div>
     </footer>
   );
@@ -499,8 +534,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
   }, []);
   return (
     <>
+      <a href="#content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[60] focus:bg-background focus:px-4 focus:py-2">Skip to content</a>
       <Header />
-      <main>{children}</main>
+      <main id="content">{children}</main>
       <Footer />
       <MobileBar />
     </>

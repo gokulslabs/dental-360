@@ -60,35 +60,10 @@
   --placeholder: oklch(0.55 0.15 60);
 }
 
-.dark {
-  --background: oklch(0.27 0.065 350);
-  --foreground: oklch(0.96 0.012 350);
-  --card: oklch(0.31 0.065 350);
-  --card-foreground: oklch(0.96 0.012 350);
-  --popover: oklch(0.31 0.065 350);
-  --popover-foreground: oklch(0.96 0.012 350);
-  --primary: oklch(0.78 0.14 350);
-  --primary-foreground: oklch(0.22 0.06 350);
-  --secondary: oklch(0.30 0.06 350);
-  --secondary-foreground: oklch(0.96 0.012 350);
-  --muted: oklch(0.33 0.06 350);
-  --muted-foreground: oklch(0.80 0.028 350);
-  --accent: oklch(0.38 0.09 350);
-  --accent-foreground: oklch(0.88 0.09 350);
-  --destructive: oklch(0.64 0.2 27);
-  --destructive-foreground: oklch(0.99 0 0);
-  --border: oklch(0.43 0.055 350);
-  --input: oklch(0.49 0.055 350);
-  --ring: oklch(0.78 0.14 350);
-  --ink: oklch(0.23 0.06 350);
-  --ink-foreground: oklch(0.96 0.012 350);
-  --placeholder: oklch(0.72 0.1 60);
-}
-
 @layer base {
   * { border-color: var(--color-border); }
-  html { scroll-behavior: smooth; color-scheme: light; }
-  html.dark { color-scheme: dark; }
+  html { scroll-behavior: smooth; scroll-padding-top: 5.5rem; color-scheme: light; }
+  :focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);

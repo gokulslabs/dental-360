@@ -13,7 +13,7 @@ export const Route = createFileRoute("/about")({
 function Page() {
   return (
     <SiteShell>
-      <About />
+      <About asPage />
       <Why />
       <Featured />
     </SiteShell>

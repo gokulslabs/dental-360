@@ -51,6 +51,7 @@ export function clinicJsonLd() {
     image: `${siteUrl}/favicon.png`,
     address: { "@type": "PostalAddress", streetAddress: b.street, addressLocality: b.locality, addressRegion: "Tamil Nadu", postalCode: b.postal, addressCountry: "IN" },
     areaServed: "Vellore",
+    sameAs: [clinic.socialLinks.instagram],
     openingHoursSpecification: hours,
     parentOrganization: { "@type": "MedicalOrganization", name: "Dental 360 Multi-Speciality Group" },
   })),

@@ -10,8 +10,8 @@ export const clinic = {
   phoneHref: "tel:+919944490580",
   whatsapp: "919944490580", // digits only
   email: "hello@dental360.example", // [PLACEHOLDER]
-  googleMaps: "https://maps.google.com/?q=Dental+360+Vellore",
-  socialLinks: { instagram: "#", facebook: "#" },
+  googleMaps: "https://www.google.com/maps/search/?api=1&query=Dental+360+Vellore",
+  socialLinks: { instagram: "https://www.instagram.com/dental_360_vellore/", facebook: "#" },
   openingHours: "Mon–Sat · 10 am–1:30 pm & 5–8:30 pm · Sun closed",
   locations: [
     { name: "Dental 360 — Sathuvachari", address: "C 10, Arcot Rd, Phase 2, Sathuvachari, Vellore, Tamil Nadu 632009", phone: sharedPhone, hours: "Mon–Sat · 10 am–1:30 pm & 5–8:30 pm · Sun closed" },
